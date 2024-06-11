@@ -1,0 +1,66 @@
+﻿@page "/"
+@layout Login 
+@using Data
+@using Services
+@using Newtonsoft.Json
+@inject NotificationService notification
+@inject DialogService DialogService
+@inject ICatalogService CatalogService
+@inject NavigationManager navigationmanager
+
+
+<PageTitle>Đăng nhặp</PageTitle>
+
+
+<RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 550px;">
+
+   
+    <RadzenTemplateForm Data=@("LoginWithDefaultValues") >
+        <RadzenLogin AllowRegister="false" AllowResetPassword="false" Username=@userName Password=@passWord UserText="Tên người dùng: " PasswordText="Mật khẩu: " LoginText="Đăng nhập"
+                     AllowRememberMe="false" RememberMe="@rememberMe"
+                     Login=@(args => OnLogin(args, "Login with default values"))
+                     ResetPassword=@(args => OnResetPassword(args, "Login with default values"))
+                     Register=@(args => OnRegister("Login with default values")) 
+                     />
+    </RadzenTemplateForm>
+</RadzenCard>
+
+
+
+
+
+@code {
+
+    private string userName = "";
+    private string passWord = "";
+    bool rememberMe = false;
+
+    async Task OnLogin(LoginArgs args, string name)
+    {
+
+        if (!string.IsNullOrEmpty(args.Username) && !string.IsNullOrEmpty(args.Password))
+        {
+            var result = await CatalogService.Login(userName = args.Username, args.Password);
+            if (result.Code == 200)
+            {
+                notification.Notify(NotificationSeverity.Success, result.Message);
+                navigationmanager.NavigateTo("/dashboard");
+            }
+           
+            else
+            {
+                notification.Notify(NotificationSeverity.Warning, result.Message);
+            }
+        }
+    }
+
+    void OnRegister(string name)
+    {
+
+    }
+
+    void OnResetPassword(string value, string name)
+    {
+        
+    }
+}

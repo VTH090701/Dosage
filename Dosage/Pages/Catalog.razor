@@ -1,0 +1,1074 @@
+﻿@page "/catalog"
+@using Data
+@using Services
+@using Newtonsoft.Json
+@inject NotificationService notification
+@inject DialogService DialogService
+@inject ICatalogService CatalogService
+@inject NavigationManager NavigationManager
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+
+
+
+<RadzenRow>
+    <RadzenColumn SizeLG="7" SizeMD="7" SizeSM="12" Size="12">
+        <RadzenRow>
+            <RadzenText TextStyle="TextStyle.H5">Dữ liệu danh mục :</RadzenText>
+            <RadzenDropDown Data=@catalogdata AllowVirtualization="true" Name="DropDownVirtualizationLoadData" Change="ChangeType"
+                            @bind-Value=type
+                            TextProperty="Display" ValueProperty="Type" Style="width: 100%; max-width: 300px;" Placeholder="Chọn loại dữ liệu danh mục" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowClear="true" AllowFiltering="true" />
+        </RadzenRow>
+    </RadzenColumn>
+    <RadzenColumn SizeLG="5" SizeMD="5" SizeSM="12" Size="12">
+        <RadzenSplitButton Click=@(args => ButtonAdd(args)) Text="Dữ liệu danh mục" Style="float:right" Icon="add">
+            <ChildContent>
+                <RadzenSplitButtonItem Text="Dạng bào chế, đường dùng, thời gian" Value="1" />
+                <RadzenSplitButtonItem Text="Hoạt chất" Value="2" />
+                <RadzenSplitButtonItem Text="Liều dùng" Value="3" />
+            </ChildContent>
+        </RadzenSplitButton>
+        <RadzenSplitButton Click=@(args => ButtonClearCache(args)) Text="Xóa cache" Icon="cached" Style="float:right" ButtonStyle="ButtonStyle.Warning" class="rz-mr-2">
+            <ChildContent>
+                <RadzenSplitButtonItem Text="Danh mục tương tác" Value="1" />
+                <RadzenSplitButtonItem Text="Danh mục thuốc" Value="2" />
+                <RadzenSplitButtonItem Text="Danh mục hoạt chất" Value="3" />
+                <RadzenSplitButtonItem Text="Tất cả" Value="4" />
+
+            </ChildContent>
+        </RadzenSplitButton>
+        <RadzenButton Text="Đồng bộ dữ liệu" Icon="alarm_on" Style="float:right" ButtonStyle="ButtonStyle.Info" class="rz-mr-2" Click="GetSync" />
+
+    </RadzenColumn>
+</RadzenRow>
+<hr />
+
+
+@if (listduration != null && listduration.Count > 0 && type == "duration")
+{
+    <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="12" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                    Data="@listduration" TItem="DurationModel" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" Style="height:550px">
+        <Columns>
+            <RadzenDataGridColumn TItem="DurationModel" Property="Dura_name" Title="Thời gian" />
+            <RadzenDataGridColumn TItem="DurationModel" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" FrozenPosition="FrozenColumnPosition.Right" Width="110px">
+                <Template Context="data">
+                    <RadzenButton Shade="Shade.Lighter" Icon="dangerous" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Warning" Click="@((args) =>
+                    {
+                        if (data.Id  != 0)
+                        {
+                            DeleteCatalogData("duration",data.Id);
+                        }
+                    }
+
+                )"></RadzenButton>
+                    |
+                    <RadzenButton Shade="Shade.Lighter" Icon="edit" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) =>
+
+                    {
+                        if (data.Id  != 0 && data.Dura_name != null)
+                        {
+                            EditCatalogData("duration", data.Id, data.Dura_name);
+                        }
+                    }
+                )"></RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+
+        </Columns>
+    </RadzenDataGrid>
+}
+else if (listroute != null && listroute.Count > 0 && type == "route")
+{
+    <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="12" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                    Data="@listroute" TItem="RouteModel" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" Style="height:550px">
+        <Columns>
+            <RadzenDataGridColumn TItem="RouteModel" Property="Route_name" Title="Đường dùng" />
+            <RadzenDataGridColumn TItem="RouteModel" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" FrozenPosition="FrozenColumnPosition.Right" Width="110px">
+                <Template Context="data">
+                    <RadzenButton Shade="Shade.Lighter" Icon="dangerous" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Warning" Click="@((args) =>
+                    {
+                        if (data.Id  != 0)
+                        {
+                            DeleteCatalogData("route",data.Id);
+                        }
+                    }
+
+                )"></RadzenButton>
+                    |
+                    <RadzenButton Shade="Shade.Lighter" Icon="edit" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) =>
+                    {
+                        if (data.Id  != 0 && data.Route_name != null)
+                        {
+                            EditCatalogData("route", data.Id, data.Route_name);
+                        }
+                    }
+                )"></RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+
+        </Columns>
+    </RadzenDataGrid>
+}
+else if (listsubstance != null && listsubstance.Count > 0 && type == "substance")
+{
+    <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="12" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                    Data="@listsubstance" TItem="SubstanceModel" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" Style="height:550px">
+        <Columns>
+
+            <RadzenDataGridColumn TItem="SubstanceModel" Property="Sub_name" Title="Tên hoạt chất" />
+            <RadzenDataGridColumn TItem="SubstanceModel" Property="Unit_name" Title="Dạng bào chế" />
+            <RadzenDataGridColumn TItem="SubstanceModel" Property="Route_name" Title="Đường dùng" />
+            <RadzenDataGridColumn TItem="SubstanceModel" Property="Content" Title="Liều lượng" />
+            <RadzenDataGridColumn TItem="SubstanceModel" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" FrozenPosition="FrozenColumnPosition.Right" Width="110px">
+                <Template Context="data">
+                    <RadzenButton Shade="Shade.Lighter" Icon="dangerous" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Warning" Click="@((args) =>
+                    {
+                        if (data.Id  != 0)
+                        {
+                            DeleteCatalogData("substance",(int)data.Id);
+                        }
+                    }
+
+                )"></RadzenButton>
+                    |
+                    <RadzenButton Shade="Shade.Lighter" Icon="edit" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) =>
+
+                    {
+                        if (data.Id  != 0 && data.Sub_name != null && data.Unit_name != null && data.Route_name != null && data.Content != null)
+                        {
+
+                            EditSubstance(data.Id,data.Sub_name ,data.Unit_name, data.Route_name, data.Content);
+                        }
+                    }
+                )"></RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+
+        </Columns>
+    </RadzenDataGrid>
+}
+else if (listunit != null && listunit.Count > 0 && type == "unit")
+{
+    <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="12" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                    Data="@listunit" TItem="UnitModel" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" Style="height:550px">
+        <Columns>
+            <RadzenDataGridColumn TItem="UnitModel" Property="Unit_name" Title="Tên đơn vị   " />
+            <RadzenDataGridColumn TItem="UnitModel" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" FrozenPosition="FrozenColumnPosition.Right" Width="110px">
+                <Template Context="data">
+                    <RadzenButton Shade="Shade.Lighter" Icon="dangerous" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Warning" Click="@((args) =>
+                    {
+                        if (data.Id  != 0)
+                        {
+                            DeleteCatalogData("unit",data.Id);
+                        }
+                    }
+
+                )"></RadzenButton>
+                    |
+                    <RadzenButton Shade="Shade.Lighter" Icon="edit" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) =>
+
+                    {
+                        if (data.Id  != 0 && data.Unit_name != null)
+                        {
+                            EditCatalogData("unit", data.Id, data.Unit_name);
+                        }
+                    }
+                )"></RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+
+        </Columns>
+    </RadzenDataGrid>
+}
+else if (listdosage_limit != null && listdosage_limit.Count > 0 && type == "dosage_limit")
+{
+    <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="12" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                    Data="@listdosage_limit" TItem="Dosage_limitModel" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" Style="height:550px">
+        <Columns>
+            <RadzenDataGridColumn TItem="Dosage_limitModel" Property="Substance_id" Title="Hoạt chất">
+                <Template Context="data">
+                    @{
+                        SubstanceModel? sub = listsub_load.FirstOrDefault(item => item.Id == data.Substance_id);
+                    }
+                    @if (sub != null)
+                    {
+                        <span>@sub.Sub_name</span>
+                    }
+                    else
+                    {
+                        <span></span>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="Dosage_limitModel" Property="Max_dosage" Title="Liều dùng tối đa" />
+            <RadzenDataGridColumn TItem="Dosage_limitModel" Property="Duration_id" Title="Khoảng">
+                <Template Context="data">
+                    @{
+                        DurationModel? dura = listduration_load.FirstOrDefault(item => item.Id == data.Duration_id);
+                    }
+                    @if (dura != null)
+                    {
+                        <span>@dura.Dura_name</span>
+                    }
+                    else
+                    {
+                        <span></span>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Dosage_limitModel" Property="Time_duration" Title="Thời gian của khoảng" />
+            <RadzenDataGridColumn TItem="Dosage_limitModel" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" FrozenPosition="FrozenColumnPosition.Right" Width="110px">
+                <Template Context="data">
+                    <RadzenButton Shade="Shade.Lighter" Icon="dangerous" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Warning" Click="@((args) =>
+                    {
+                        if (data.Substance_id  != 0)
+                        {
+                            DeleteCatalogData("dosage_limit",(int)data.Substance_id);
+                        }
+                    }
+
+                )"></RadzenButton>
+                    |
+                    <RadzenButton Shade="Shade.Lighter" Icon="edit" Variant="Variant.Flat" Size="ButtonSize.Medium" ButtonStyle="ButtonStyle.Secondary" Click="@((args) =>
+                    {
+                        if (data != null)
+                        {
+                            EditDosage(data);
+                        }
+                    }
+                )"></RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+else
+{
+    <span>Không có dữ liệu</span>
+}
+
+
+
+
+@code {
+    
+
+    private bool isConnected;
+    private ResponLogin us = new ResponLogin();
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            bool isReturn = await ReturnIndex();
+            if (isReturn)
+            {
+                NavigationManager.NavigateTo("/");
+
+
+            }
+            else
+            {
+                isConnected = true;
+                await LoadTypeCatalog();
+
+            }
+            StateHasChanged();
+        }
+    }
+
+    public async Task<bool> ReturnIndex()
+    {
+        us = await sessionStorage.GetItemAsync<ResponLogin>("us");
+        if (us == null)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
+    private async Task ButtonAdd(RadzenSplitButtonItem item)
+    {
+        if (item != null)
+        {
+            if (item.Value == "1")
+            {
+                await ModaAddUnit();
+            }
+            else if (item.Value == "2")
+            {
+                await ModalAddSubtance();
+            }
+            else if (item.Value == "3")
+            {
+                await ModalAddDosage();
+            }
+        }
+        else
+        {
+
+        }
+    }
+
+    private async Task ButtonClearCache(RadzenSplitButtonItem item)
+    {
+        if (item != null)
+        {
+            if (item.Value == "1")
+            {
+                await ClearCache("category_medical_interaction");
+            }
+            else if (item.Value == "2")
+            {
+                await ClearCache("category_medications");
+            }
+            else if (item.Value == "3")
+            {
+                await ClearCache("category_substance");
+            }
+            else
+            {
+                await ClearCache("all");
+            }
+        }
+        else
+        {
+
+        }
+    }
+
+
+    public class CatalogData
+    {
+        public string? Type { set; get; }
+        public string? Display { set; get; }
+    }
+    private List<CatalogData> catalogdata = new List<CatalogData>()
+                                                                {
+         //Add Type, Display
+        new CatalogData() { Type = "duration", Display = "Thời gian" },
+        new CatalogData() { Type = "route", Display = "Đường dùng" },
+        new CatalogData() { Type = "substance", Display = "Hoạt chất" },
+        new CatalogData() { Type = "unit", Display = "Đơn vị" },
+        new CatalogData() { Type = "dosage_limit", Display = "Liều dùng của thuốc" }
+                                                                };
+    private List<UnitModel> listunit_load = new List<UnitModel>();
+    private List<RouteModel> listroute_load = new List<RouteModel>();
+    private List<SubstanceModel> listsub_load = new List<SubstanceModel>();
+    private List<DurationModel> listduration_load = new List<DurationModel>();
+
+    private async Task LoadTypeCatalog()
+    {
+    //Load list listunit_load,...
+        var result = await CatalogService.GetCatalog("unit");
+        if (result != null && result.Code == 200)
+        {
+            listunit_load = JsonConvert.DeserializeObject<List<UnitModel>>(result.Value.ToString());
+        }
+        else if (result?.Code == 404)
+        {
+            listunit_load = new List<UnitModel>();
+        }
+            //Load list route
+        var result1 = await CatalogService.GetCatalog("route");
+        if (result1 != null && result1.Code == 200)
+        {
+            listroute_load = JsonConvert.DeserializeObject<List<RouteModel>>(result1.Value.ToString());
+        }
+        else if (result1?.Code == 404)
+        {
+            listroute_load = new List<RouteModel>();
+        }
+            //Load list subtance
+        var result2 = await CatalogService.GetCatalog("substance");
+        if (result2 != null && result2.Code == 200)
+        {
+            listsub_load = JsonConvert.DeserializeObject<List<SubstanceModel>>(result2.Value.ToString());
+
+            foreach (var item1 in listsub_load)
+            {
+                UnitModel? unit = listunit_load.FirstOrDefault(item => item.Id == item1.Unit_id);
+                RouteModel? route = listroute_load.FirstOrDefault(item => item.Id == item1.Route_id);
+                item1.Unit_name = unit?.Unit_name;
+                item1.Route_name = route?.Route_name;
+
+            }
+        }
+        else if (result2?.Code == 404)
+        {
+            listsub_load = new List<SubstanceModel>();
+        }
+            //Load list duration
+        var result3 = await CatalogService.GetCatalog("duration");
+        if (result3 != null && result3.Code == 200)
+        {
+            listduration_load = JsonConvert.DeserializeObject<List<DurationModel>>(result3.Value.ToString());
+        }
+        else if (result3?.Code == 404)
+        {
+            listduration_load = new List<DurationModel>();
+        }
+
+    }
+    private string type = "";
+    private List<DurationModel> listduration = new List<DurationModel>();
+    private List<RouteModel> listroute = new List<RouteModel>();
+    private List<SubstanceModel> listsubstance = new List<SubstanceModel>();
+    private List<UnitModel> listunit = new List<UnitModel>();
+    private List<Dosage_limitModel> listdosage_limit = new List<Dosage_limitModel>();
+
+    private async Task ChangeType()
+    {
+        if (type != "")
+        {
+            if (type == "duration")
+            {
+                var result = await CatalogService.GetCatalog(type);
+                if (result != null && result.Code == 200)
+                {
+                    listduration = JsonConvert.DeserializeObject<List<DurationModel>>(result.Value.ToString());
+                }
+                else if (result?.Code == 404)
+                {
+                    listduration = new List<DurationModel>();
+                }
+            }
+            else if (type == "route")
+            {
+                var result = await CatalogService.GetCatalog(type);
+                if (result != null && result?.Code == 200)
+                {
+                    listroute = JsonConvert.DeserializeObject<List<RouteModel>>(result.Value.ToString());
+                }
+                else if (result?.Code == 404)
+                {
+                    listroute = new List<RouteModel>();
+                }
+            }
+            else if (type == "substance")
+            {
+                var result = await CatalogService.GetCatalog(type);
+                if (result != null && result.Code == 200)
+                {
+                    listsubstance = JsonConvert.DeserializeObject<List<SubstanceModel>>(result.Value.ToString());
+
+                    foreach (var item1 in listsubstance)
+                    {
+                        UnitModel? unit = listunit_load.FirstOrDefault(item => item.Id == item1.Unit_id);
+                        RouteModel? route = listroute_load.FirstOrDefault(item => item.Id == item1.Route_id);
+                        item1.Unit_name = unit?.Unit_name;
+                        item1.Route_name = route?.Route_name;
+
+                    }
+                }
+                else if (result?.Code == 404)
+                {
+                    listsubstance = new List<SubstanceModel>();
+                }
+            }
+            else if (type == "unit")
+            {
+                var result = await CatalogService.GetCatalog(type);
+                if (result != null && result.Code == 200)
+                {
+                    listunit = JsonConvert.DeserializeObject<List<UnitModel>>(result.Value.ToString());
+                }
+                else if (result?.Code == 404)
+                {
+                    listunit = new List<UnitModel>();
+                }
+            }
+            else if (type == "dosage_limit")
+            {
+                var result = await CatalogService.GetCatalog(type);
+                if (result != null && result.Code == 200)
+                {
+                    listdosage_limit = JsonConvert.DeserializeObject<List<Dosage_limitModel>>(result.Value.ToString());
+                }
+                else if (result?.Code == 404)
+                {
+                    listdosage_limit = new List<Dosage_limitModel>();
+                }
+
+            }
+
+        }
+    }
+    private List<CatalogData> catalogdatamodal = new List<CatalogData>()
+                                                                {
+        new CatalogData { Type = "unit", Display = "Dạng bào chế" },
+        new CatalogData { Type = "route", Display = "Đường dùng" },
+        new CatalogData { Type = "duration", Display = "Thời gian" }
+                                                                };
+    private Variant variant = Variant.Outlined;
+
+    private async Task ModaAddUnit()
+    {
+        string type = "";
+        string display = "";
+        var result = await DialogService.OpenAsync("Thêm dữ liệu danh mục", ds =>
+    {
+    return @<RadzenStack Gap="1.5rem">
+        @if (catalogdatamodal != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Danh mục" Variant="@variant">
+                <RadzenDropDown @bind-Value="@type" Data=@catalogdatamodal TextProperty="Display" ValueProperty="Type" Placeholder="Chọn danh mục" AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        <RadzenStack>
+            <RadzenFormField Text="Giá trị cụ thể" Variant="@variant">
+                <RadzenTextBox @bind-Value="@display" />
+            </RadzenFormField>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="Trở lại" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+            <RadzenButton Text="Thêm" Click="() => SaveCatalogData(type, display)" Style="width: 120px;" />
+        </RadzenStack>
+    </RadzenStack>
+                                                                                                                                                                                                                                                                                                                                                                                                ;
+                                                                                                                                                    });
+    }
+
+    private async Task Reload()
+    {
+        await ChangeType();
+        StateHasChanged();
+    }
+    private async Task SaveCatalogData(string type, string display)
+    {
+        var result = await CatalogService.PostCatalog(type, display);
+        if (result != null && result.Code == 200)
+        {
+            notification.Notify(NotificationSeverity.Success, result.Message);
+            DialogService.Close();
+            await Reload();
+        }
+        else
+        {
+            notification.Notify(NotificationSeverity.Warning, result?.Message);
+        }
+    }
+
+    private async void DeleteCatalogData(string type, int id)
+    {
+        var result = await CatalogService.DeleteCatalog(type, id);
+        if (result != null && result.Code == 200)
+        {
+            notification.Notify(NotificationSeverity.Success, result.Message);
+            await Reload();
+        }
+        else
+        {
+            notification.Notify(NotificationSeverity.Warning, result?.Message);
+        }
+    }
+
+    private async void EditCatalogData(string type, int id, string display)
+    {
+
+        var result = await DialogService.OpenAsync("Cập nhật dữ liệu danh mục", ds =>
+    {
+    
+        return @<RadzenStack Gap="1.5rem">
+        @if (catalogdatamodal != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Danh mục" Variant="@variant">
+                <RadzenDropDown @bind-Value="@type" Data=@catalogdatamodal TextProperty="Display" ValueProperty="Type" Placeholder="Chọn danh mục" AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" Disabled />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        <RadzenStack>
+            <RadzenFormField Text="Giá trị cụ thể" Variant="@variant">
+                <RadzenTextBox @bind-Value="@display" />
+            </RadzenFormField>
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="Trở lại" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+            <RadzenButton Text="Cập nhật" Click="() => UpdateCatalogData(type, id, display)" Style="width: 120px;" />
+        </RadzenStack>
+    </RadzenStack>;});
+    }
+
+    private async Task UpdateCatalogData(string type, int id, string display)
+    {
+        var result = await CatalogService.UpdateCatalog(type, id, display);
+        if (result != null && result.Code == 200)
+        {
+            notification.Notify(NotificationSeverity.Success, result.Message);
+            DialogService.Close();
+            await Reload();
+        }
+        else
+        {
+            notification.Notify(NotificationSeverity.Warning, result?.Message);
+        }
+
+    }
+
+    private async Task ModalAddSubtance()
+    {
+        SubstanceModel sub = new SubstanceModel();
+
+        var result = await DialogService.OpenAsync("Thêm dữ liệu danh mục hoạt chất", ds =>
+                                                                {
+    return @<RadzenStack Gap="1.5rem">
+
+        <RadzenStack>
+            <RadzenFormField Text="Tên hoạt chất" Variant="@variant">
+                <RadzenTextBox @bind-Value="@sub.Sub_name" />
+            </RadzenFormField>
+        </RadzenStack>
+
+        @if(listunit_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Dạng bào chế" Variant="@variant">
+                <RadzenDropDown @bind-Value="@sub.Unit_name" Data=@listunit_load TextProperty="Unit_name" ValueProperty="Unit_name" Placeholder="Chọn dạng bào chế " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        @if(listroute_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Đường dùng" Variant="@variant">
+                <RadzenDropDown @bind-Value="@sub.Route_name" Data=@listroute_load TextProperty="Route_name" ValueProperty="Route_name" Placeholder="Chọn đường dùng " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        <RadzenStack>
+            <RadzenFormField Text="Liều lượng" Variant="@variant">
+                <RadzenTextBox @bind-Value="@sub.Content" />
+            </RadzenFormField>
+        </RadzenStack>
+
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="Trở lại" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+            <RadzenButton Text="Thêm" Click="() => SaveSubstance(sub)" Style="width: 120px;" />
+        </RadzenStack>
+    </RadzenStack>
+                        ;
+                                                                                                                });
+
+    }
+
+    private async void SaveSubstance(SubstanceModel sub)
+    {
+        var result = await CatalogService.PostSubtance(sub);
+        if (result != null && result.Code == 200)
+        {
+            notification.Notify(NotificationSeverity.Success, result.Message);
+            DialogService.Close();
+            await Reload();
+        }
+        else
+        {
+            notification.Notify(NotificationSeverity.Warning, result?.Message);
+        }
+    }
+
+    private async void EditSubstance(long id, string name, string unit_name, string route_name, string content)
+    {
+
+        var result = await DialogService.OpenAsync("Cập nhật dữ liệu danh mục hoạt chất", ds =>
+                                                          {
+      return @<RadzenStack Gap="1.5rem">
+
+        <RadzenStack>
+            <RadzenFormField Text="Tên hoạt chất" Variant="@variant">
+                <RadzenTextBox @bind-Value="@name" />
+            </RadzenFormField>
+        </RadzenStack>
+
+        @if(listunit_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Dạng bào chế" Variant="@variant">
+                <RadzenDropDown @bind-Value="@unit_name" Data=@listunit_load TextProperty="Unit_name" ValueProperty="Unit_name" Placeholder="Chọn dạng bào chế " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        @if(listroute_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Đường dùng" Variant="@variant">
+                <RadzenDropDown @bind-Value="@route_name" Data=@listroute_load TextProperty="Route_name" ValueProperty="Route_name" Placeholder="Chọn đường dùng " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        <RadzenStack>
+            <RadzenFormField Text="Liều lượng" Variant="@variant">
+                <RadzenTextBox @bind-Value="@content" />
+            </RadzenFormField>
+        </RadzenStack>
+
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="Trở lại" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+            <RadzenButton Text="Cập nhật" Click="() => UpdateSubstance( id,  name, unit_name  , route_name, content)" Style="width: 120px;" />
+        </RadzenStack>
+    </RadzenStack>
+                                ;
+                                                      });
+    }
+
+    private async void UpdateSubstance(long id, string name, string unit_name, string route_name, string content)
+    {
+        var result = await CatalogService.UpdateSubtance(id, name, unit_name, route_name, content);
+        if (result != null && result.Code == 200)
+        {
+            notification.Notify(NotificationSeverity.Success, result.Message);
+            DialogService.Close();
+            await Reload();
+        }
+        else
+        {
+            notification.Notify(NotificationSeverity.Warning, result?.Message);
+        }
+    }
+
+    DosageLimit dosage = new DosageLimit();
+
+    private async Task ModalAddDosage()
+    {
+
+        dosage = new DosageLimit();
+        long id_sub = 0;
+        var result = await DialogService.OpenAsync("Thêm dữ liệu liều dùng", ds =>
+                        {
+                            return@<RadzenStack Gap="1.5rem">
+
+        @if(listsub_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Hoạt chất" Variant="@variant">
+        
+            <RadzenDropDownDataGrid @bind-Value="id_sub" Data=@listsub_load TextProperty="Sub_name" ValueProperty="Id" Placeholder="Chọn hoạt chất" AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" 
+                                        Change="()=> ChangSubstance(id_sub) " EmptyText="Không có dữ liệu" AllowFiltering="true" Fi>
+                    <Columns>
+                        <RadzenDropDownDataGridColumn Property="Sub_name" Title="Tên hoạt chất" Width="140px" />
+                        <RadzenDropDownDataGridColumn Property="Unit_name" Title="Dạng bào chế" Width="80px" />
+                        <RadzenDropDownDataGridColumn Property="Route_name" Title="Đường dùng" Width="80px" />
+                        <RadzenDropDownDataGridColumn Property="Content" Title="Liều lượng" Width="100px" />
+                    </Columns>
+            </RadzenDropDownDataGrid>
+            
+                </RadzenFormField>
+        </RadzenStack>
+    }
+
+        @if(listroute_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Đường dùng" Variant="@variant">
+                <RadzenDropDown @bind-Value="dosage.Route" Disabled Data=@listroute_load TextProperty="Route_name" ValueProperty="Route_name" Placeholder="Chọn đường dùng " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        <RadzenStack>
+            <RadzenFormField Text="Liều lượng" Variant="@variant">
+                <RadzenTextBox @bind-Value="dosage.Content" Disabled />
+            </RadzenFormField>
+        </RadzenStack>
+
+        <RadzenStack>
+            <RadzenFormField Text="Liều lượng tối đa" Variant="@variant">
+                <RadzenNumeric @bind-Value="dosage.Max_dosage" />
+            </RadzenFormField>
+        </RadzenStack>
+        @if(listduration_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Khoảng" Variant="@variant">
+                <RadzenDropDown @bind-Value="dosage.Duration" Data=@listduration_load TextProperty="Dura_name" ValueProperty="Dura_name" Placeholder="Chọn khoảng " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        <RadzenStack>
+            <RadzenFormField Text="Thời gian của khoảng" Variant="@variant">
+                <RadzenNumeric @bind-Value="dosage.Time_duration" />
+            </RadzenFormField>
+        </RadzenStack>
+
+        @if(listunit_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Dạng bào chế" Variant="@variant">
+                <RadzenDropDown @bind-Value="@dosage.Unit" Disabled Data=@listunit_load TextProperty="Unit_name" ValueProperty="Unit_name" Placeholder="Chọn dạng bào chế " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="Trở lại" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+            <RadzenButton Text="Thêm" Click="() => SaveDosage(dosage)" Style="width: 120px;" />
+        </RadzenStack>
+
+    </RadzenStack>
+                                                                                        ;
+                        });
+
+    }
+
+    private void ChangSubstance(long id)
+    {
+        if (id != 0)
+        {
+            var selectedSubstance = listsub_load.FirstOrDefault(sub => sub.Id == id);
+            if (selectedSubstance != null)
+            {
+                dosage.Substance = selectedSubstance.Sub_name;
+                dosage.Content = selectedSubstance.Content;
+                dosage.Unit = selectedSubstance.Unit_name;
+                dosage.Route = selectedSubstance.Route_name;
+                InvokeAsync(() => { DialogService.Refresh(); });
+
+            }
+        }
+        else if (id == 0)
+        {
+            dosage.Substance = "";
+            dosage.Content = "";
+            dosage.Unit = "";
+            dosage.Route = "";
+            InvokeAsync(() => { DialogService.Refresh(); });
+        }
+    }
+
+    private async void SaveDosage(DosageLimit dosage)
+    {
+        var result = await CatalogService.PostDosage(dosage);
+        if (result != null && result.Code == 200)
+        {
+            notification.Notify(NotificationSeverity.Success, result.Message);
+            DialogService.Close();
+            await Reload();
+        }
+        else
+        {
+            notification.Notify(NotificationSeverity.Warning, result?.Message);
+        }
+    }
+
+    private async void EditDosage(Dosage_limitModel dosage_edit)
+    {
+        long id_sub = 0;
+        var result1 = await CatalogService.GetDetailsDosage(dosage_edit.Substance_id);
+        Dosage_limitModel detailsdosage = new Dosage_limitModel();
+        if (result1 != null && result1.Code == 200)
+        {
+            detailsdosage = JsonConvert.DeserializeObject<Dosage_limitModel>(result1.Value.ToString());
+        }
+        dosage = new DosageLimit();
+        if (detailsdosage != null)
+        {
+            id_sub = detailsdosage.Substance_id;
+            dosage.Substance = detailsdosage.Sub_name;
+            dosage.Route = detailsdosage.Route;
+            dosage.Max_dosage = detailsdosage.Max_dosage;
+            dosage.Duration = detailsdosage.Duration;
+            dosage.Time_duration = detailsdosage.Time_duration;
+            dosage.Unit = detailsdosage.Unit;
+
+        }
+
+        var result = await DialogService.OpenAsync("Cập nhật dữ liệu liều dùng", ds =>
+                                {
+    return @<RadzenStack Gap="1.5rem">
+        @if(listsub_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Hoạt chất" Variant="@variant">
+                <RadzenDropDownDataGrid @bind-Value="id_sub" Data=@listsub_load TextProperty="Sub_name" ValueProperty="Id" Placeholder="Chọn hoạt chất" AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        AllowFiltering="true" Change="()=> ChangSubstance(id_sub) " Disabled>
+                    <Columns>
+                        <RadzenDropDownDataGridColumn Property="Sub_name" Title="Tên hoạt chất" Width="140px" />
+                        <RadzenDropDownDataGridColumn Property="Unit_name" Title="Dạng bào chế" Width="80px" />
+                        <RadzenDropDownDataGridColumn Property="Route_name" Title="Đường dùng" Width="80px" />
+                        <RadzenDropDownDataGridColumn Property="Content" Title="Liều lượng" Width="100px" />
+                    </Columns>
+                </RadzenDropDownDataGrid>
+            </RadzenFormField>
+        </RadzenStack>
+    }
+
+        @if(listroute_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Đường dùng" Variant="@variant">
+                <RadzenDropDown @bind-Value="dosage.Route" Disabled Data=@listroute_load TextProperty="Route_name" ValueProperty="Route_name" Placeholder="Chọn đường dùng " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        <RadzenStack>
+            <RadzenFormField Text="Liều lượng" Variant="@variant">
+                <RadzenTextBox @bind-Value="dosage.Content" Disabled />
+            </RadzenFormField>
+        </RadzenStack>
+
+        <RadzenStack>
+            <RadzenFormField Text="Liều lượng tối đa" Variant="@variant">
+                <RadzenNumeric @bind-Value="dosage.Max_dosage" />
+            </RadzenFormField>
+        </RadzenStack>
+        @if(listduration_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Khoảng" Variant="@variant">
+                <RadzenDropDown @bind-Value="dosage.Duration" Data=@listduration_load TextProperty="Dura_name" ValueProperty="Dura_name" Placeholder="Chọn khoảng " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+        <RadzenStack>
+            <RadzenFormField Text="Thời gian của khoảng" Variant="@variant">
+                <RadzenNumeric @bind-Value="dosage.Time_duration" />
+            </RadzenFormField>
+        </RadzenStack>
+
+        @if(listunit_load != null)
+    {
+        <RadzenStack>
+            <RadzenFormField Text="Dạng bào chế" Variant="@variant">
+                <RadzenDropDown @bind-Value="@dosage.Unit" Disabled Data=@listunit_load TextProperty="Unit_name" ValueProperty="Unit_name" Placeholder="Chọn dạng bào chế " AllowVirtualization="true" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                AllowFiltering="true" />
+            </RadzenFormField>
+        </RadzenStack>
+    }
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="Trở lại" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+            <RadzenButton Text="Cập nhật" Click="() => UpdateDosage(id_sub,dosage)" Style="width: 120px;" />
+        </RadzenStack>
+
+    </RadzenStack>
+                       ;
+                                });
+    }
+
+    private async Task UpdateDosage(long id, DosageLimit dosage)
+    {
+        var result = await CatalogService.UpdateDosage(id, dosage);
+        if (result != null && result.Code == 200)
+        {
+            notification.Notify(NotificationSeverity.Success, result.Message);
+            DialogService.Close();
+            await Reload();
+        }
+        else
+        {
+            notification.Notify(NotificationSeverity.Warning, result?.Message);
+        }
+    }
+
+    private List<SynchronizedModel> listsyncSuccess = new List<SynchronizedModel>();
+    private List<SynchronizedModel> listsyncFailed = new List<SynchronizedModel>();
+
+    private async Task GetSync()
+    {
+        var result = await CatalogService.GetSynchronized(us.Token!);
+        if (result != null && result.Code == 200)
+        {
+            notification.Notify(NotificationSeverity.Success, result.Message);
+
+            var resultSynchronized = JsonConvert.DeserializeObject<ResultSynchronized>(result.Value.ToString());
+            if (resultSynchronized != null)
+            {
+                listsyncSuccess = resultSynchronized.Success;
+                listsyncFailed = resultSynchronized.Failed;
+
+                var resultmodal = await DialogService.OpenAsync("Dữ liệu đồng bộ", ds =>
+    {
+        return @<RadzenRow>
+        <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size="12">
+            <RadzenText TextStyle="TextStyle.H6">Hoạt chất thêm không thành công</RadzenText>
+            <RadzenRow>
+
+                @if (listsyncFailed != null && listsyncFailed.Count > 0)
+            {
+
+                <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" AllowVirtualization="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                                Data="@listsyncFailed" TItem="SynchronizedModel" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" Style="height:550px">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="SynchronizedModel" Property="Content" Title="Hàm lượng" />
+                        <RadzenDataGridColumn TItem="SynchronizedModel" Property="Display" Title="Hiển thị" />
+                        <RadzenDataGridColumn TItem="SynchronizedModel" Property="Unit" Title="Đơn vị" />
+                        <RadzenDataGridColumn TItem="SynchronizedModel" Property="Used" Title="Sử dụng" />
+
+                    </Columns>
+                </RadzenDataGrid>
+            } else{
+
+                <span> Không có dữ liệu </span>
+            }
+            </RadzenRow>
+        </RadzenColumn>
+        <RadzenColumn SizeLG="6" SizeMD="6" SizeSM="12" Size="12">
+            <RadzenText TextStyle="TextStyle.H6">Hoạt chất thêm  thành công</RadzenText>
+            <RadzenRow>
+                @if (listsyncSuccess != null && listsyncSuccess.Count > 0)
+            {
+                <RadzenDataGrid AllowFiltering="false" AllowColumnResize="true" AllowVirtualization="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+                                Data="@listsyncSuccess" TItem="SynchronizedModel" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single" Style="height:550px">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="SynchronizedModel" Property="Content" Title="Hàm lượng" />
+                        <RadzenDataGridColumn TItem="SynchronizedModel" Property="Display" Title="Hiển thị" />
+                        <RadzenDataGridColumn TItem="SynchronizedModel" Property="Unit" Title="Đơn vị" />
+                        <RadzenDataGridColumn TItem="SynchronizedModel" Property="Used" Title="Sử dụng" />
+
+                    </Columns>
+                </RadzenDataGrid>
+            }else{
+                <span> Không có dữ liệu </span>
+
+            }
+            </RadzenRow>
+        </RadzenColumn>
+    </RadzenRow>
+    ;
+    }, new DialogOptions() { Width = "85%" });
+            }
+
+        }
+        else
+        {
+            notification.Notify(NotificationSeverity.Warning, result?.Message);
+        }
+
+    }
+
+    private async Task ClearCache(string type)
+    {
+        var result = await CatalogService.DeleteCacheSynchronized(type);
+        if (result != null && result.Code == 200)
+        {
+            notification.Notify(NotificationSeverity.Success, result.Message);
+
+        }
+        else
+        {
+            notification.Notify(NotificationSeverity.Warning, result?.Message);
+        }
+    }
+
+}
+
+

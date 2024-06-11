@@ -1,0 +1,137 @@
+﻿@inherits LayoutComponentBase
+
+@using Data
+@using Services
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager NavigationManager
+@inject NotificationService notification
+
+<PageTitle>Dosage</PageTitle>
+
+@*<div class="page">
+
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div> *@
+
+<RadzenComponents />
+<RadzenLayout style="position: relative;grid-template-areas: 'rz-sidebar rz-header' 'rz-sidebar rz-body'">
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="0">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+                <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                <RadzenLabel Text="VASD" Style="font-weight:600;font-size:22px" />
+            </RadzenStack>
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+                @if (us != null)
+                {
+                    if (us.Display != null)
+                    {
+                        <RadzenText Style="font-size:18px" class="rz-mt-2 rz-mr-2">@us.Display </RadzenText>
+                    }
+                    else
+                    {
+                        <RadzenText>chưa lấy được tên</RadzenText>
+                    }
+                }
+                else
+                {
+                    <RadzenText>Chưa đăng nhập</RadzenText>
+                }
+                <RadzenProfileMenu>
+                    <Template>
+                        <div><RadzenIcon Icon="account_circle" Style="font-size:25px;" class="rz-mt-1 rz-pr-1" /></div>
+                    </Template>
+
+                    <ChildContent>
+                        <button class="rz-background-color-white" style="border: none;">
+                            <div style="display:flex;">
+                                <RadzenIcon Icon=" assignment_ind" />Hồ sơ
+                            </div>
+                        </button>
+                        <br />
+                        <button  class="rz-background-color-white" style="border: none;">
+                            <div style="display:flex;">
+                                <RadzenIcon Icon="logout" />Đăng xuất
+                            </div>
+                        </button>
+                    </ChildContent>
+                </RadzenProfileMenu>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenSidebar Responsive="false" @bind-Expanded="@sidebarExpanded" style="position: absolute; z-index: 3">
+        <RadzenStack AlignItems="AlignItems.End" Class="rz-p-2">
+            <RadzenButton Icon="west" Variant="Variant.Text" ButtonStyle="ButtonStyle.Secondary" Click="@(() => sidebarExpanded = false)" />
+        </RadzenStack>
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard" Path="dashboard"/>
+            <RadzenPanelMenuItem Text="Danh mục" Icon="description" Path="catalog" />
+        </RadzenPanelMenu>
+
+    </RadzenSidebar>
+    <RadzenBody>
+        <div class="rz-p-4">
+            @Body
+        </div>
+    </RadzenBody>
+
+    @if (sidebarExpanded)
+    {
+        <div @onclick="@(() => sidebarExpanded = false)" class="rz-dialog-mask" style="position: absolute; z-index: 2"></div>
+    }
+</RadzenLayout>
+
+@code {
+    bool sidebarExpanded = false;
+    private bool isConnected;
+    private ResponLogin us = new ResponLogin();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            bool isReturn = await ReturnIndex();
+            if (isReturn)
+            {
+                NavigationManager.NavigateTo("/");
+
+
+            }
+            else
+            {
+                isConnected = true;
+
+            }
+            StateHasChanged();
+        }
+    }
+
+
+    public async Task<bool> ReturnIndex()
+    {
+         us = await sessionStorage.GetItemAsync<ResponLogin>("us");
+        if (us == null)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
+
+}
