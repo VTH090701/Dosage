@@ -4,6 +4,7 @@ using Dosage.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Radzen;
+using System_EMS_1._0.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,13 @@ builder.Services.AddRadzenComponents();
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<ICatalogService, CatalogService>();
 builder.Services.AddBlazoredSessionStorage();
+builder.Services.AddScoped<IApi, Api>();
+
+
+
+//Config
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
+builder.Services.Configure<ApiSettingsLogin>(builder.Configuration.GetSection("ApiSettingsLogin"));
 
 
 var app = builder.Build();

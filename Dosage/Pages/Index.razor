@@ -12,15 +12,22 @@
 <PageTitle>Đăng nhặp</PageTitle>
 
 
-<RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 550px;">
+<RadzenCard class="rz-my-12 rz-mx-auto rz-p-4 rz-p-md-12 rz-background-color-base-100 rz-color-secondary-darker" style="max-width: 550px;">
+    
+    <div style="display:flex;" class="" >
+        <RadzenText TextStyle="TextStyle.DisplayH4" class=""> Dosage</RadzenText>
+        <img src="icon/Hand With a Pill.png" class="" style="padding:0 5px">
+    </div>
 
-   
+    <hr />
     <RadzenTemplateForm Data=@("LoginWithDefaultValues") >
         <RadzenLogin AllowRegister="false" AllowResetPassword="false" Username=@userName Password=@passWord UserText="Tên người dùng: " PasswordText="Mật khẩu: " LoginText="Đăng nhập"
                      AllowRememberMe="false" RememberMe="@rememberMe"
                      Login=@(args => OnLogin(args, "Login with default values"))
                      ResetPassword=@(args => OnResetPassword(args, "Login with default values"))
-                     Register=@(args => OnRegister("Login with default values")) 
+                     Register=@(args => OnRegister("Login with default values"))
+                     UserRequired="Tên người dùng không được để trống"
+                     PasswordRequired="Mật khẩu không được để trống"
                      />
     </RadzenTemplateForm>
 </RadzenCard>

@@ -9,11 +9,9 @@
 <PageTitle>Dosage</PageTitle>
 
 @*<div class="page">
-
     <div class="sidebar">
         <NavMenu />
     </div>
-
     <main>
         <div class="top-row px-4">
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
@@ -26,6 +24,8 @@
 </div> *@
 
 <RadzenComponents />
+
+
 <RadzenLayout style="position: relative;grid-template-areas: 'rz-sidebar rz-header' 'rz-sidebar rz-body'">
     <RadzenHeader>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="0">
@@ -76,8 +76,8 @@
             <RadzenButton Icon="west" Variant="Variant.Text" ButtonStyle="ButtonStyle.Secondary" Click="@(() => sidebarExpanded = false)" />
         </RadzenStack>
         <RadzenPanelMenu>
-            <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard" Path="dashboard"/>
-            <RadzenPanelMenuItem Text="Danh mục" Icon="description" Path="catalog" />
+            <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard" Path="dashboard" Click="NavitemSiber" />
+            <RadzenPanelMenuItem Text="Danh mục" Icon="description" Path="catalog" Click="NavitemSiber" />
         </RadzenPanelMenu>
 
     </RadzenSidebar>
@@ -93,11 +93,13 @@
     }
 </RadzenLayout>
 
+
+
+
 @code {
     bool sidebarExpanded = false;
     private bool isConnected;
     private ResponLogin us = new ResponLogin();
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -121,7 +123,7 @@
 
     public async Task<bool> ReturnIndex()
     {
-         us = await sessionStorage.GetItemAsync<ResponLogin>("us");
+        us = await sessionStorage.GetItemAsync<ResponLogin>("us");
         if (us == null)
         {
             return true;
@@ -132,6 +134,14 @@
         }
     }
 
+    
+
+    private void NavitemSiber()
+    {
+       
+        sidebarExpanded = false;
+
+    }
 
 
 }
